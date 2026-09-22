@@ -1,0 +1,18 @@
+SUNBULFIND.ONLINE DEPLOY BUILD
+
+Domain: https://sunbulfind.online
+
+Upload contents of this folder directly into Hostinger public_html.
+Correct:
+public_html/index.html
+public_html/assets/
+public_html/region/
+public_html/sitemap.xml
+public_html/robots.txt
+
+After upload:
+1. Open https://sunbulfind.online
+2. Check HTTPS works
+3. Check https://sunbulfind.online/sitemap.xml
+4. Submit sitemap.xml in Google Search Console
+5. Submit sitemap.xml in Naver Search Advisor
