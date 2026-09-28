@@ -125,3 +125,18 @@ footer{border-top:1px solid var(--line);padding:42px 0 58px;color:#777;font-size
 
 /* 2026-09-28 true table readability fix */
 .steps-table th:first-child,.steps-table td:first-child{width:64px;text-align:center}.steps-table th:nth-child(2),.steps-table td:nth-child(2){width:190px}@media(max-width:700px){.steps-table{min-width:720px}}
+
+
+/* prepaid plan section */
+.plan-section{margin-top:30px}
+.plan-note{margin:8px 0 16px;color:#555;font-size:14px;line-height:1.7}
+.plan-images{display:grid;grid-template-columns:1fr;gap:22px;margin:20px 0 28px}
+.plan-card{border:1px solid #e7e7e7;border-radius:16px;padding:14px;background:#fff}
+.plan-card h3{margin:2px 0 12px;font-size:19px}
+.plan-card img{display:block;width:100%;max-width:780px;height:auto;margin:0 auto;border-radius:12px}
+.plan-caption{margin:10px 0 0;color:#666;font-size:13px;line-height:1.6;text-align:center}
+@media (max-width:700px){
+  .plan-card{padding:10px;border-radius:12px}
+  .plan-card h3{font-size:17px}
+  .plan-caption{font-size:12px}
+}
