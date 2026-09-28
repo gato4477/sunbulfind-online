@@ -140,3 +140,40 @@ footer{border-top:1px solid var(--line);padding:42px 0 58px;color:#777;font-size
   .plan-card h3{font-size:17px}
   .plan-caption{font-size:12px}
 }
+
+
+/* FIX: keep prepaid plan images inside the article column */
+.plan-section{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  overflow:hidden;
+}
+.plan-images{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  display:block;
+  margin:18px 0 28px;
+}
+.plan-card{
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
+  overflow:hidden;
+  margin:0 0 22px;
+}
+.plan-card img{
+  display:block;
+  width:auto !important;
+  max-width:min(100%, 680px) !important;
+  height:auto !important;
+  margin:0 auto;
+  object-fit:contain;
+}
+@media (max-width:760px){
+  .plan-card img{
+    width:100% !important;
+    max-width:100% !important;
+  }
+}
