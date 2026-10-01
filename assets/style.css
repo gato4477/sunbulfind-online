@@ -177,3 +177,359 @@ footer{border-top:1px solid var(--line);padding:42px 0 58px;color:#777;font-size
     max-width:100% !important;
   }
 }
+
+/* =========================================================
+   2026-09-29 MOBILE READABILITY FIX
+   - 모바일 가로 잘림/과도한 글자 크기/여백 개선
+   - 기존 데스크톱 디자인은 유지
+   ========================================================= */
+
+/* 긴 한글 제목/텍스트가 화면 밖으로 밀리지 않도록 기본 안전장치 */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img, svg, video, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+.wrap,
+.nav,
+.breadcrumb,
+.pagehero,
+.content,
+.article,
+.sidebox,
+.table-wrap,
+.plan-section,
+.plan-images,
+.plan-card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.article h1,
+.article h2,
+.article h3,
+.pagehero h1,
+.pagehero p,
+.article p,
+.article li,
+th,
+td {
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+@media (max-width: 900px) {
+  /* PC용 2열 레이아웃을 모바일에서는 확실하게 1열로 고정 */
+  .content {
+    display: block;
+    width: 100%;
+    padding-top: 34px;
+    padding-bottom: 58px;
+  }
+
+  .article {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 0;
+  }
+
+  .sidebox {
+    position: static;
+    width: 100%;
+    margin-top: 38px;
+  }
+}
+
+@media (max-width: 700px) {
+  /* 화면 좌우 여백: 답답하지 않으면서 본문 폭 확보 */
+  .wrap {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  /* 상단 헤더 */
+  .nav {
+    height: 62px;
+    gap: 12px;
+  }
+
+  .logo {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 21px;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  .topbtn {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  /* 경로 표시 */
+  .breadcrumb {
+    padding: 12px 0;
+    font-size: 12px;
+    line-height: 1.45;
+    white-space: normal;
+  }
+
+  /* 첫 화면 히어로: 모바일에서 높이와 제목 크기 축소 */
+  .pagehero {
+    padding: 32px 0 30px;
+  }
+
+  .eyebrow {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  h1,
+  .pagehero h1 {
+    margin: 12px 0 12px;
+    font-size: clamp(28px, 8.2vw, 34px);
+    line-height: 1.18;
+    letter-spacing: -1.2px;
+  }
+
+  .pagehero p,
+  .hero p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.75;
+  }
+
+  /* 본문 전체 간격 */
+  .content {
+    padding-top: 32px;
+    padding-bottom: 54px;
+  }
+
+  .article h2 {
+    margin: 38px 0 13px;
+    font-size: clamp(23px, 6.8vw, 28px);
+    line-height: 1.28;
+    letter-spacing: -0.8px;
+  }
+
+  .article h2:first-child {
+    margin-top: 0;
+  }
+
+  .article h3 {
+    font-size: 19px;
+    line-height: 1.35;
+  }
+
+  .article p,
+  .lead {
+    font-size: 15px;
+    line-height: 1.78;
+  }
+
+  .summary-card {
+    padding: 17px;
+    margin-bottom: 24px;
+    border-radius: 16px;
+  }
+
+  .note,
+  .notice,
+  .area-context,
+  .local-facts {
+    padding: 15px 16px;
+  }
+
+  /* 표: 기존 min-width 때문에 모바일에서 옆으로 밀리던 문제 제거 */
+  .table-wrap {
+    width: 100%;
+    max-width: 100%;
+    margin: 14px 0 24px;
+    overflow: hidden;
+    border-radius: 13px;
+  }
+
+  table,
+  .info-table,
+  .steps-table,
+  .compare-table {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed;
+  }
+
+  th,
+  td,
+  .info-table th,
+  .info-table td {
+    padding: 11px 9px;
+    font-size: 13px;
+    line-height: 1.55;
+    vertical-align: top;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+
+  /* 일반 2열 비교표의 첫 열은 라벨만 들어가므로 좁게 */
+  .info-table th:first-child,
+  .info-table td:first-child,
+  .compare-table th:first-child,
+  .compare-table td:first-child {
+    width: 30%;
+  }
+
+  /* 8단계 개통은 이미 세로 카드이므로 테이블용 폭 규칙 해제 */
+  .steps-table th:first-child,
+  .steps-table td:first-child,
+  .steps-table th:nth-child(2),
+  .steps-table td:nth-child(2) {
+    width: auto !important;
+  }
+
+  /* 셀프개통 8단계 카드 */
+  .open-flow {
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .open-step {
+    display: block;
+    padding: 14px 15px;
+    border-radius: 13px;
+  }
+
+  .open-step .num {
+    width: auto;
+    min-height: 30px;
+    padding: 0 11px;
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+
+  .open-step p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  /* 태그/FAQ */
+  .tag,
+  .tags .tag {
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+
+  .faq-list details {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  .faq-list summary {
+    padding: 13px 0;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* 요금제 이미지 */
+  .plan-section,
+  .plan-images,
+  .plan-card {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .plan-card {
+    padding: 9px;
+    margin-bottom: 16px;
+  }
+
+  .plan-card h3 {
+    margin: 2px 0 9px;
+    font-size: 16px;
+  }
+
+  .plan-card img {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* 사이드 상담 박스는 본문 마지막에서 너무 커지지 않게 */
+  .sidebox {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .sidebox .btn {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+
+  /* 푸터 */
+  footer {
+    padding-top: 32px;
+    padding-bottom: 42px;
+  }
+}
+
+@media (max-width: 380px) {
+  .wrap {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .logo {
+    font-size: 19px;
+  }
+
+  .topbtn {
+    padding: 9px 12px;
+    font-size: 12px;
+  }
+
+  h1,
+  .pagehero h1 {
+    font-size: 28px;
+  }
+
+  .article h2 {
+    font-size: 23px;
+  }
+
+  th,
+  td,
+  .info-table th,
+  .info-table td {
+    padding: 10px 7px;
+    font-size: 12.5px;
+  }
+}
+
+/* 2026-10-01 second mobile pass */
+html,body{max-width:100%;overflow-x:hidden}img,video,iframe{max-width:100%;height:auto}.article,.content,.wrap{min-width:0}
+.quick-nav{border-bottom:1px solid var(--line);background:#fff}.quick-nav-inner{display:flex;gap:8px;overflow-x:auto;padding-top:11px!important;padding-bottom:11px!important;scrollbar-width:none}.quick-nav-inner::-webkit-scrollbar{display:none}.quick-nav a{flex:0 0 auto;padding:8px 12px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:800}.quick-nav a:first-child{background:var(--pink2);border-color:#ffd7e5;color:#c92f65}
+.hub-intro{margin:20px 0 10px;padding:17px 18px;border:1px solid var(--line);border-radius:16px;background:#fafafa}.hub-intro strong{display:block;margin-bottom:4px;font-size:17px}.hub-intro p{margin:0;color:#666;font-size:14px;line-height:1.75}
+.home-guide{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}.home-guide>div{border:1px solid var(--line);border-radius:16px;background:#fff;padding:18px}.home-guide b{display:block;margin-bottom:5px}.home-guide span{font-size:14px;color:#666;line-height:1.6}.station-home-card{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:20px;padding:20px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,#fff,#fff8fa)}.station-home-card h3{margin:0 0 4px}.station-home-card p{margin:0;color:#666}.station-home-card a{flex:0 0 auto;padding:11px 15px;border-radius:999px;background:#202124;color:#fff;font-size:14px;font-weight:800}
+@media(max-width:700px){
+ .wrap{width:100%;max-width:100%;padding-left:17px;padding-right:17px}.nav{height:60px}.logo{font-size:20px}.topbtn{padding:9px 13px;font-size:13px}.breadcrumb{padding:10px 0;font-size:12px;line-height:1.45}
+ .pagehero{padding:27px 0 25px}.pagehero h1{font-size:clamp(27px,8vw,32px);line-height:1.17;letter-spacing:-1.15px;margin:10px 0 11px}.pagehero p{font-size:15px;line-height:1.68}.eyebrow{font-size:11px;padding:6px 9px}
+ .quick-nav-inner{padding-left:17px!important;padding-right:17px!important}.quick-nav a{padding:7px 10px;font-size:12px}
+ .content{display:block;padding-top:26px;padding-bottom:54px}.article{padding-left:0!important;width:100%}.article h2{font-size:clamp(22px,6.2vw,26px);line-height:1.3;margin:34px 0 12px;letter-spacing:-.65px}.article h3{font-size:18px}.article p{font-size:15px;line-height:1.75;margin:9px 0 14px}
+ .table-wrap{width:100%;max-width:100%;overflow-x:auto!important;-webkit-overflow-scrolling:touch;margin:13px 0 22px!important;border-radius:12px}.info-table{min-width:0!important;width:100%!important;table-layout:fixed}.info-table th,.info-table td{font-size:13px!important;line-height:1.5!important;padding:10px 8px!important;white-space:normal!important;word-break:keep-all!important;overflow-wrap:anywhere!important}.info-table th:first-child,.info-table td:first-child{width:29%!important}.plan-section .info-table{min-width:520px!important;table-layout:auto}.plan-section .table-wrap{overflow-x:auto!important}.plan-section .info-table th,.plan-section .info-table td{white-space:nowrap!important;font-size:12.5px!important}.plan-section .info-table td:last-child{white-space:normal!important;min-width:145px}
+ .open-step{padding:13px 14px}.open-step strong{font-size:15px}.open-step p{font-size:14px!important;line-height:1.62!important}.tag,.tags .tag{font-size:12px;padding:7px 9px}.faq-list summary{font-size:14px;line-height:1.5}.sidebox{margin-top:30px;padding:16px}.plan-card{padding:8px}.plan-card h3{font-size:16px}.plan-caption{font-size:12.5px!important}
+ .section{padding:42px 0}.section h2{font-size:26px}.hero{padding:40px 0 34px}.hero h1{font-size:32px}.hero p{font-size:15px}.search-card{padding:18px;border-radius:17px}.grid{grid-template-columns:1fr 1fr;gap:9px}.card{padding:14px;border-radius:13px}.card strong{font-size:16px}.card span{font-size:12px}.home-guide{grid-template-columns:1fr}.station-home-card{display:block;padding:17px}.station-home-card a{display:inline-block;margin-top:13px}.hub-intro{padding:14px 15px}
+}
+@media(max-width:390px){.wrap{padding-left:14px;padding-right:14px}.grid{grid-template-columns:1fr}.pagehero h1{font-size:27px}.article h2{font-size:22px}.info-table th,.info-table td{font-size:12.5px!important;padding:9px 7px!important}}
