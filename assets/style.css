@@ -533,3 +533,10 @@ html,body{max-width:100%;overflow-x:hidden}img,video,iframe{max-width:100%;heigh
  .section{padding:42px 0}.section h2{font-size:26px}.hero{padding:40px 0 34px}.hero h1{font-size:32px}.hero p{font-size:15px}.search-card{padding:18px;border-radius:17px}.grid{grid-template-columns:1fr 1fr;gap:9px}.card{padding:14px;border-radius:13px}.card strong{font-size:16px}.card span{font-size:12px}.home-guide{grid-template-columns:1fr}.station-home-card{display:block;padding:17px}.station-home-card a{display:inline-block;margin-top:13px}.hub-intro{padding:14px 15px}
 }
 @media(max-width:390px){.wrap{padding-left:14px;padding-right:14px}.grid{grid-template-columns:1fr}.pagehero h1{font-size:27px}.article h2{font-size:22px}.info-table th,.info-table td{font-size:12.5px!important;padding:9px 7px!important}}
+
+
+/* Site name: 전국 선불폰 대리점 찾기 */
+@media(max-width:560px){
+  .logo{font-size:16px!important;line-height:1.15!important;letter-spacing:-.4px;white-space:nowrap;}
+  .logo span{display:block;}
+}
