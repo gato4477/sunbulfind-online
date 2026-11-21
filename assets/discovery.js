@@ -8,7 +8,7 @@ const aliases={'강원도':'강원','경기도':'경기','경상남도':'경남'
 const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,'').replace(/선불폰|선불유심/g,'');
 const url=parts=>parts.map(encodeURIComponent).join('/');
 const items=REGIONS.map(r=>({kind:'region',name:r.읍면동,city:r.시군구,province:r.시도,sub:r.시도+' · '+r.시군구,keywords:[r.시도,aliases[r.시도],r.시군구,r.읍면동].join(' '),href:url(['region',r.시도,r.시군구,r.읍면동+'선불폰.html'])}));
-STATIONS.forEach(([city,name])=>items.push({kind:'station',name,city,province:city,sub:city+' · 지하철역',keywords:city+' '+name,href:url(['station',city,name+'선불폰.html'])}));
+STATIONS.forEach(([city,name])=>{const displayName=name.replace(/역역$/,'역');items.push({kind:'station',name:displayName,city,province:city,sub:city+' · 지하철역',keywords:city+' '+displayName,href:url(['station',city,name+'선불폰.html'])});});
 root.innerHTML=`<div class="finder-heading"><span class="finder-kicker">GATO LOCAL FINDER</span><h2>지역·지하철역 한번에 찾기</h2><p>전국 2,828개 지역과 490개 지하철역의 개통 안내를 검색해보세요.</p></div>
 <div class="finder-types" role="group" aria-label="검색 종류"><button type="button" data-type="all" aria-pressed="true">전체</button><button type="button" data-type="region" aria-pressed="false">지역</button><button type="button" data-type="station" aria-pressed="false">지하철역</button></div>
 <label class="finder-label" for="finder-query">어느 지역을 찾으세요?</label>
