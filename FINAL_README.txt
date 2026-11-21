@@ -9,5 +9,5 @@ NOTE: Replace example.com in sitemap.xml and robots.txt with the final domain be
 Brand/contact update:
 - 상담하기: https://m.site.naver.com/1GQVM
 - 전화: 010-4316-4477
-- 개통하기: https://www.n-telecom.co.kr/gatoshop/view/open/selfopen_explain.aspx
+- 개통하기: https://알뜰개통.kr/
 - 상담 주체 표기: 가토통신

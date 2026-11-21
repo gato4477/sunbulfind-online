@@ -76,7 +76,7 @@ more.addEventListener('click',()=>render(false));
 const hero=document.querySelector('.hero-grid>div:first-child');
 if(hero){
   const actions=document.createElement('div');actions.className='finder-cta';
-  const opening=document.createElement('a');opening.href='https://www.n-telecom.co.kr/gatoshop/view/open/selfopen_explain.aspx';opening.target='_blank';opening.rel='noopener noreferrer';opening.textContent='온라인 개통하기';opening.dataset.event='selfopen_click';opening.className='finder-cta-main';
+  const opening=document.createElement('a');opening.href='https://알뜰개통.kr/';opening.target='_blank';opening.rel='noopener noreferrer';opening.textContent='온라인 개통하기';opening.dataset.event='selfopen_click';opening.className='finder-cta-main';
   const kakao=document.createElement('a');kakao.href='https://m.site.naver.com/1GQVM';kakao.target='_blank';kakao.rel='noopener noreferrer';kakao.textContent='카카오 상담';kakao.dataset.event='consultation_click';kakao.className='finder-cta-sub';
   actions.append(opening,kakao);hero.append(actions);
 }
