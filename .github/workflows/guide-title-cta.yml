@@ -1,0 +1,186 @@
+name: Guide titles and action buttons
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/guide-title-cta.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update static detail pages and validate
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, html, hashlib, collections
+          from html.parser import HTMLParser
+
+          open_url = 'https://알뜰개통.kr/'
+          chat_url = 'https://m.site.naver.com/1GQVM'
+          topics = [
+              ('편의점 유심으로 셀프개통하는 방법', 'KT 바로유심 또는 LG망 호환 유심을 구입한 뒤 본인 명의 인증서로 온라인 신청을 진행할 수 있습니다.', '유심 구매와 온라인 신청'),
+              ('개통 가능 시간과 당일 신청 방법', '신규개통은 매일 08:00~21:50, 번호이동은 일요일·공휴일을 제외한 10:00~19:50에 신청할 수 있습니다. 당일 처리는 접수 조건에 따라 달라집니다.', '개통 가능 시간'),
+              ('매장 방문 없이 비대면 개통하기', '본인 명의 인증서와 호환 유심 또는 LG망 eSIM 지원 단말을 준비하면 매장에 가지 않고도 온라인 신청을 확인할 수 있습니다.', '비대면 신청 준비'),
+              ('핸드폰 미납·정지 후 새 번호 만들기', '통신요금 미납이나 정지로 기존 회선을 쓰기 어렵다면 별도의 선불 신규개통 가능 여부를 확인해 보세요. 기존 미납금은 남습니다.', '미납·정지와 신규개통'),
+              ('선불요금제 비교와 통신비 절약 방법', '인증용 번호인지 주사용 번호인지에 따라 기본형부터 데이터 중심 요금제까지 비교하고 필요한 만큼 충전해 이용할 수 있습니다.', '요금제 선택'),
+              ('공기계에 선불유심 개통하는 방법', '정상 사용 가능한 공기계나 자급제폰이 있다면 단말 호환 여부와 유심을 확인한 뒤 새 번호를 신청할 수 있습니다.', '공기계와 유심'),
+              ('본인 명의로 새 번호 신청하기', '새 번호가 필요하다면 신분증과 본인확인 수단을 준비하세요. 온라인 본인확인이 어려우면 방문 가능 여부를 확인할 수 있습니다.', '본인 명의 신규개통'),
+              ('KT·LG 선불유심 선택과 개통 절차', 'KT 바로유심과 LG망 호환 유심 중 단말기 및 이용 조건에 맞는 제품을 준비해 신청하세요.', 'KT·LG망 선택'),
+              ('주말 선불폰 신규개통과 준비물', '신규는 연휴를 포함해 매일 신청할 수 있으며 번호이동은 일요일과 공휴일에 제한됩니다. 본인확인 수단과 유심을 준비하세요.', '주말 개통'),
+              ('업무용·세컨폰 번호 개통하기', '개인 번호와 업무용 번호를 나누고 싶다면 회선 보유 조건을 확인하고 별도의 선불 번호를 신청할 수 있습니다.', '추가 번호'),
+              ('다이소 유심으로 LG망 개통하기', 'LG망 호환 다이소 유심은 NFC를 지원하지 않는 제품이므로 구매 전 종류와 호환 여부를 확인하세요.', '다이소 유심'),
+              ('직권해지 후 선불 신규개통 알아보기', '기존 번호가 직권해지됐다면 원통신사에서 복구 가능 여부를 확인하고, 새 번호가 필요한 경우 선불 신규를 검토하세요.', '직권해지 후 새 번호'),
+              ('실물 유심 없이 LG 선불 eSIM 신청하기', 'eSIM을 지원하는 휴대폰이라면 현재 LG망 선불 eSIM 신청 조건과 모델명을 확인하세요.', 'LG망 eSIM'),
+              ('약정 없이 필요한 기간만 이용하기', '이용 기간과 데이터 사용량을 고려해 선불요금제를 선택하고 충전 방식과 이용 조건을 확인하세요.', '기간과 요금제'),
+              ('인증서가 없을 때 방문 개통 준비하기', '온라인 본인확인이 어렵다면 신분증을 준비하고 카카오 채널로 방문 가능한 매장과 예약 시간을 확인하세요.', '방문 개통 준비'),
+          ]
+          special = {
+              'region/경기도/부천시/심곡동선불폰.html': ('방문 개통과 비대면 신청 방법', '심곡동에서 온라인 신청이 어렵다면 기존 안내에 있는 부천역BP 등 방문 가능 매장을 카카오 채널에서 확인하고 예약하세요. 인증서가 있다면 비대면으로 신청할 수 있습니다.', '방문 또는 비대면 선택'),
+              'station/수도권/서울역역선불폰.html': topics[1],
+              'station/대전/대전역역선불폰.html': topics[1],
+              'station/부산/부산역역선불폰.html': topics[1],
+              'station/수도권/구로디지털단지역선불폰.html': topics[9],
+              'region/서울특별시/강남구/역삼동선불폰.html': topics[9],
+              'region/경기도/양평군/양평읍선불폰.html': topics[2],
+          }
+          def attr(v): return html.escape(v, quote=True)
+          def a(label, dest, cls, event, placement):
+              return f'<a class="guide-cta-btn {cls}" href="{dest}" target="_blank" rel="noopener noreferrer" onclick="if(typeof gtag===\'function\')gtag(\'event\',\'{event}\',{{event_category:\'conversion\',event_label:location.pathname,cta_position:\'{placement}\'}})">{label}</a>'
+          def actions(position, caption='', mode='all'):
+              op = a('온라인 개통하기 ›',open_url,'guide-open','selfopen_click',position)
+              ca = a('카카오 상담하기',chat_url,'guide-chat','consultation_click',position)
+              reser = a('방문 예약하기',chat_url,'guide-reserve','reservation_click',position)
+              buttons = op+ca+reser if mode=='all' else (op+ca if mode=='open' else ca+reser)
+              return f'<div class="guide-cta guide-cta-{position}'+(' guide-cta-pair' if mode=='help' else '')+'">'+(f'<p class="guide-cta-caption">{caption}</p>' if caption else '')+'<div class="guide-cta-buttons">'+buttons+'</div></div>'
+          def meta_set(s, key, value):
+              pat = r'<meta\b[^>]*>'
+              def change(m):
+                  tag=m.group(0)
+                  if not re.search(r'(?:name|property)=["\']'+re.escape(key)+r'["\']',tag): return tag
+                  return re.sub(r'content=(["\'])(.*?)\1',lambda x:'content="'+attr(value)+'"',tag,count=1,flags=re.S)
+              return re.sub(pat,change,s)
+          def insert_before(s, pattern, block):
+              s,n=re.subn(pattern, lambda m:block+'\n'+m.group(0),s,count=1,flags=re.S)
+              if n!=1: raise ValueError('Missing insertion point '+pattern)
+              return s
+          class Audit(HTMLParser):
+              def __init__(self):
+                  super().__init__(); self.h1=0;self.cta=collections.Counter()
+              def handle_starttag(self, tag, attrs):
+                  d=dict(attrs)
+                  if tag=='h1': self.h1+=1
+                  if tag=='a' and 'guide-cta-btn' in d.get('class','').split():
+                      self.cta[d.get('href')]+=1
+          paths = sorted(Path('region').rglob('*선불폰.html'))+sorted(Path('station').rglob('*선불폰.html'))
+          assert sum(p.parts[0]=='region' for p in paths)==2828
+          assert sum(p.parts[0]=='station' for p in paths)==490
+          distribution=collections.Counter()
+          for p in paths:
+              old=p.read_text(encoding='utf-8')
+              assert 'guide-cta-hero' not in old, p
+              hero=re.search(r'<section class="pagehero">[\s\S]*?</section>',old)
+              assert hero, p
+              h=re.search(r'<h1[^>]*>(.*?)<br\s*/?>(.*?)</h1>',hero.group(),re.S)
+              assert h and h.group(2).strip()=='유심부터 셀프개통까지', (p, h.group(0) if h else None)
+              label=html.unescape(h.group(1))
+              key=p.as_posix()
+              idx=int.from_bytes(hashlib.sha256(key.encode()).digest()[:4],'big')%len(topics)
+              topic, intro, focus=special.get(key,topics[idx])
+              distribution[topic]+=1
+              # Exact geographic name is inherited from the existing source, not guessed.
+              context=p.parts[2] if p.parts[0]=='region' else ('서울·수도권' if p.parts[1]=='수도권' else p.parts[1])
+              title=f'{label} {topic} | {context}'
+              description=f'{label}: {intro}'
+              newhero=hero.group().replace(h.group(0),f'<h1>{attr(label)}<br/><span class="guide-topic">{attr(topic)}</span></h1>',1)
+              newhero,n=re.subn(r'<p>[\s\S]*?</p>',f'<p>{attr(intro)}</p>',newhero,count=1)
+              assert n==1,p
+              newhero=newhero.replace('</div></section>',actions('hero','신규개통 08:00~21:50 · 방문은 사전 예약', 'all')+'</div></section>')
+              s=old.replace(hero.group(),newhero,1)
+              s=re.sub(r'<title>[\s\S]*?</title>',lambda m:'<title>'+attr(title)+'</title>',s,count=1)
+              for k in ('og:title','twitter:title'): s=meta_set(s,k,title)
+              for k in ('description','og:description','twitter:description'): s=meta_set(s,k,description)
+              # Static HTML actions located after the relevant existing content.
+              s=insert_before(s,r'<h2[^>]*>유심(?:은 어디서 준비하나요\?|과 eSIM 준비)</h2>',actions('time','개통 가능 시간을 확인했다면 신청을 시작하세요.','open'))
+              s=insert_before(s,r'<h2[^>]*>데이터 사용량에 맞는 요금제[^<]*</h2>',actions('sim','유심과 본인확인 수단이 준비되셨나요?','open'))
+              s=insert_before(s,r'<h2 id="faq">',actions('visit','온라인 진행이 어렵다면 방문 가능한 매장과 시간을 먼저 확인하세요.','help'))
+              s=s.replace('</main><aside>',actions('end','개통 방법을 선택해 주세요.','all')+'</main><aside>',1)
+              # Keep the previous sidebox intact; add a booking option.
+              s=s.replace('</a></div></aside>', '</a>'+a('방문 예약하기',chat_url,'guide-reserve','reservation_click','aside')+'</div></aside>',1)
+              sticky='<nav class="guide-mobile-actions" aria-label="빠른 개통 및 상담">'+a('개통하기',open_url,'guide-open','selfopen_click','mobile')+a('상담하기',chat_url,'guide-chat','consultation_click','mobile')+a('방문예약',chat_url,'guide-reserve','reservation_click','mobile')+'</nav>'
+              s=s.replace('</body>',sticky+'</body>',1)
+              s=s.replace('<body>','<body class="guide-detail">',1)
+              # Preserve canonical, old internal/external links, analytics and all product/plan images.
+              canon=lambda x:re.findall(r'<link[^>]*rel="canonical"[^>]*>',x)
+              assert canon(s)==canon(old),p
+              assert s.count('G-K88VMWDCXD')==old.count('G-K88VMWDCXD'),p
+              assert collections.Counter(re.findall(r'<img\b[^>]*>',s))==collections.Counter(re.findall(r'<img\b[^>]*>',old)),p
+              before=collections.Counter(re.findall(r'href="([^"]+)"',old))
+              after=collections.Counter(re.findall(r'href="([^"]+)"',s))
+              assert not (before-after),p
+              assert not re.search(r'gatomobile\.kr|selfopen_explain\.aspx',s),p
+              audit=Audit();audit.feed(s)
+              assert audit.h1==1 and audit.cta[open_url]==5 and audit.cta[chat_url]==9,(p,audit.h1,audit.cta)
+              p.write_text(s,encoding='utf-8')
+          css=Path('assets/style.css')
+          css.write_text(css.read_text(encoding='utf-8')+'''
+          /* Detail page conversion UI: images unchanged */
+          .guide-detail .pagehero h1{line-height:1.26;overflow-wrap:anywhere}
+          .guide-topic{display:inline-block;font-size:.84em;font-weight:850;color:#222;letter-spacing:-.04em}
+          .guide-detail .pagehero p{max-width:740px;line-height:1.75}
+          .guide-detail .article h2{margin-top:54px;line-height:1.42}
+          .guide-detail .article p{line-height:1.9;word-break:keep-all;overflow-wrap:anywhere}
+          .guide-detail .article .table-wrap{margin-bottom:25px}
+          .guide-cta{padding:20px;background:#fff7fa;border:1px solid #f3d4df;border-radius:16px;margin:26px 0 34px}
+          .guide-cta-hero{max-width:680px;margin:24px 0 0;background:#fff}
+          .guide-cta .guide-cta-caption{margin:0 0 12px!important;color:#42424d;font-size:14px!important;line-height:1.55!important;font-weight:700}
+          .guide-cta-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+          .guide-cta-btn{display:flex!important;align-items:center;justify-content:center;text-align:center;padding:12px 9px;min-height:48px;border-radius:10px;font-weight:850;font-size:15px;line-height:1.35;box-sizing:border-box;white-space:normal;word-break:keep-all}
+          .guide-open{grid-column:1/-1;background:#d91b60!important;color:#fff!important;min-height:58px;font-size:18px;box-shadow:0 4px 12px #d91b6024}
+          .guide-chat{background:#fee500!important;color:#342900!important}
+          .guide-reserve{background:white!important;color:#b81950!important;border:1px solid #d91b60}
+          .guide-cta-btn:focus-visible{outline:3px solid #177cc9;outline-offset:3px}
+          .guide-cta-btn:hover{filter:brightness(.96)}
+          .guide-detail .sidebox .btn.dark{background:#d91b60;color:#fff;font-weight:900}
+          .guide-detail .sidebox .btn.pink{background:#fee500;color:#342900}
+          .guide-detail .sidebox .guide-reserve{margin-top:10px}
+          .guide-mobile-actions{display:none}
+          .finder-cta-main{background:#d91b60;color:white;flex-basis:100%;font-size:17px!important;min-height:55px!important}
+          .finder-cta-sub{background:#fee500;color:#342900;border:0;flex:1}
+          .finder-cta-reserve{background:#fff;border:1px solid #d91b60;color:#b81950;flex:1}
+          @media(max-width:700px){
+            .guide-detail{padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+            .guide-detail .pagehero h1{font-size:clamp(25px,7.4vw,32px)}
+            .guide-topic{font-size:.85em}
+            .guide-detail .article h2{margin-top:42px;margin-bottom:16px}
+            .guide-detail .article p{font-size:16px;line-height:1.85}
+            .guide-detail .article .table-wrap{margin-bottom:24px!important}
+            .guide-cta{padding:14px;margin:24px 0 32px}
+            .guide-cta-hero{margin-bottom:0}
+            .guide-mobile-actions{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:6px;position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;padding:9px 10px calc(9px + env(safe-area-inset-bottom));box-shadow:0 -4px 22px #0002;border-top:1px solid #eee}
+            .guide-mobile-actions .guide-cta-btn{grid-column:auto;min-height:50px;font-size:14px;padding:9px 5px;box-shadow:none}
+          }
+          ''',encoding='utf-8')
+          js=Path('assets/discovery.js')
+          j=js.read_text(encoding='utf-8')
+          old='actions.append(opening,kakao);hero.append(actions);'
+          new="const reserve=kakao.cloneNode(true);reserve.textContent='방문 예약하기';reserve.dataset.event='reservation_click';reserve.className='finder-cta-reserve';actions.append(opening,kakao,reserve);hero.append(actions);"
+          assert j.count(old)==1
+          js.write_text(j.replace(old,new),encoding='utf-8')
+          assert len(distribution)>=15
+          print('Updated',len(paths),'detail pages,',len(distribution),'title topics. All canonical URLs, images, links and GA4 IDs preserved. CTA destinations checked.')
+          for topic,count in distribution.items(): print(count,topic)
+          PY
+          node --check assets/discovery.js
+          git diff --check
+      - name: Commit static pages
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add region station assets/style.css assets/discovery.js
+          git commit -m 'feat: localized guide titles, readable layouts and action buttons'
+          git push origin HEAD:main
