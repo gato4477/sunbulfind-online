@@ -1,4 +1,4 @@
-name: Make activation buttons visible on every page
+name: Stack article activation and chat buttons
 on:
   push:
     branches: [main]
@@ -11,62 +11,69 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Add static buttons and refresh CSS
+      - name: Update article buttons only
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
           from collections import Counter
-          def a(label, url, cls, event, pos):
+          def link(label,url,cls,event,pos):
               return f"""<a class="guide-cta-btn {cls}" href="{url}" target="_blank" rel="noopener noreferrer" onclick="if(typeof gtag==='function')gtag('event','{event}',{{event_category:'conversion',event_label:location.pathname,cta_position:'{pos}'}})">{label}</a>"""
-          def buttons(pos):
-              return a('온라인 개통하기 ›','https://알뜰개통.kr/','guide-open','selfopen_click',pos)+a('카카오 상담하기','https://m.site.naver.com/1GQVM','guide-chat','consultation_click',pos)+a('방문 예약하기','https://m.site.naver.com/1GQVM','guide-reserve','reservation_click',pos)
-          def block(pos):
-              return '<div class="guide-cta guide-cta-'+pos+'"><div class="guide-cta-buttons">'+buttons(pos)+'</div></div>'
-          paths=[Path('index.html')]+list(Path('region').rglob('*.html'))+list(Path('station').rglob('*.html'))
-          count=Counter()
+          def block(pos,caption):
+              op=link('온라인 개통하기 ›','https://알뜰개통.kr/','guide-open','selfopen_click',pos)
+              ca=link('카카오 상담하기','https://m.site.naver.com/1GQVM','guide-chat','consultation_click',pos)
+              return f'<div class="guide-cta guide-cta-{pos}"><p class="guide-cta-caption">{caption}</p><div class="guide-cta-buttons" style="display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px">{op}{ca}</div></div>'
+          paths=sorted(Path('region').rglob('*선불폰.html'))+sorted(Path('station').rglob('*선불폰.html'))
+          assert len(paths)==3318
+          counts=Counter()
           for p in paths:
               old=p.read_text(encoding='utf-8')
-              s=old
-              # Versioned full CSS path prevents stale styles on already visited pages.
-              s=re.sub(r'assets/style\.css(?:\?[^"\s]*)?"', 'assets/style.css?v=20261122-cta2"',s)
-              if p==Path('index.html'):
-                  assert 'guide-cta-home' not in s
-                  s=s.replace('</p></div><div class="search-card">','</p>'+block('home')+'</div><div class="search-card">',1)
-                  assert 'guide-cta-home' in s
-                  s=s.replace('assets/discovery.js"','assets/discovery.js?v=20261122-cta2"')
-                  count['home']+=1
-              elif 'guide-cta-hero' not in s:
-                  s,n=re.subn(r'(<section class="pagehero">[\s\S]*?)(</div></section>)',lambda m:m[1]+block('hub')+m[2],s,count=1)
-                  if not n:
-                      s=s.replace('</header>','</header><div class="wrap">'+block('hub')+'</div>',1)
-                  assert 'guide-cta-hub' in s,p
-                  count['hub']+=1
-              else:
-                  assert 'guide-cta-time' in s and 'guide-cta-sim' in s,p
-                  count['detail']+=1
-              if 'guide-mobile-actions' not in s:
-                  s=s.replace('<body>','<body class="guide-detail">',1)
-                  s=s.replace('</body>','<nav class="guide-mobile-actions" aria-label="빠른 개통 및 상담">'+buttons('mobile')+'</nav></body>',1)
-              # Inline critical button styles ensure even old or unavailable stylesheet cannot hide them.
-              critical="""<style>.guide-cta{display:block!important;margin:24px 0;padding:16px;border:1px solid #f2d1de;border-radius:16px;background:#fff7fa}.guide-cta-buttons{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.guide-cta-btn{display:flex!important;align-items:center;justify-content:center;text-align:center;min-height:48px;padding:12px 8px;border-radius:10px;font-weight:800;line-height:1.4;text-decoration:none;box-sizing:border-box}.guide-open{grid-column:1/-1;background:#d91b60!important;color:white!important;font-size:18px;min-height:56px}.guide-chat{background:#fee500!important;color:#342900!important}.guide-reserve{background:#fff!important;color:#b81950!important;border:1px solid #d91b60}.guide-mobile-actions{display:none}@media(max-width:700px){body.guide-detail{padding-bottom:calc(88px + env(safe-area-inset-bottom))}.guide-mobile-actions{display:grid!important;grid-template-columns:1.35fr 1fr 1fr;gap:6px;position:fixed;bottom:0;left:0;right:0;z-index:1000;background:#fff;padding:8px 8px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -3px 16px #0002}.guide-mobile-actions .guide-cta-btn{grid-column:auto;font-size:13px;min-height:50px;padding:7px 3px}}</style>"""
-              s=s.replace('</head>',critical+'</head>',1)
-              assert 'guide-open' in s and 'guide-mobile-actions' in s,p
-              assert re.findall(r'<link[^>]*rel="canonical"[^>]*>',s)==re.findall(r'<link[^>]*rel="canonical"[^>]*>',old),p
+              m=re.search(r'<main\b[^>]*>[\s\S]*?</main>',old)
+              assert m,p
+              article=m.group(0)
+              # Replace every existing body CTA, leave hero, sidebar and fixed bottom untouched.
+              def replace(m):
+                  pos=m.group(1).split()[0]
+                  caption=re.search(r'<p[^>]*>([\s\S]*?)</p>',m.group(0))
+                  counts[pos]+=1
+                  return block(pos,caption.group(1) if caption else '지금 바로 개통을 진행하거나 카카오 상담을 이용하세요.')
+              article=re.sub(r'<div class="guide-cta guide-cta-([^"]+)">[\s\S]*?</div></div>',replace,article)
+              article=re.sub(r'<div class="article-inline-cta"[^>]*data-cta-position="([^"]+)"[^>]*>[\s\S]*?</div></div>',replace,article)
+              # Add a CTA after preparation and after plans where absent, without clustering around time and SIM.
+              for pos,pattern,caption in [
+                  ('preparation',r'<h2\b[^>]*id=["\']open["\'][^>]*>','준비물이 있다면 온라인으로 신청하세요.'),
+                  ('plans',r'</section>','원하는 요금제를 확인했다면 개통을 진행하세요.')
+              ]:
+                  if 'guide-cta-'+pos+'"' in article: continue
+                  if pos=='plans':
+                      sec=re.search(r'<section\b[^>]*class=["\']plan-section["\'][^>]*>[\s\S]*?</section>',article)
+                      if sec:
+                          idx=sec.end()
+                      else:
+                          target=re.search(r'<h2\b[^>]*>[^<]*상황별[^<]*</h2>',article)
+                          idx=target.start() if target else article.rfind('</main>')
+                  else:
+                      target=re.search(pattern,article)
+                      if not target:
+                          headings=list(re.finditer(r'<h2\b[^>]*>',article))
+                          target=headings[min(3,len(headings)-1)] if headings else None
+                      idx=target.start() if target else article.rfind('</main>')
+                  article=article[:idx]+block(pos,caption)+article[idx:]
+                  counts[pos]+=1
+              s=old[:m.start()]+article+old[m.end():]
+              assert 'grid-template-columns:minmax(0,1fr)!important' in article,p
+              for b in re.findall(r'<div class="guide-cta guide-cta-[^"]+">[\s\S]*?</div></div>',article):
+                  assert b.count('온라인 개통하기')==1 and b.count('카카오 상담하기')==1 and '방문 예약하기' not in b,p
+              assert re.findall(r'<nav class="guide-mobile-actions"[\s\S]*?</nav>',old)==re.findall(r'<nav class="guide-mobile-actions"[\s\S]*?</nav>',s),p
+              assert re.findall(r'<img\b[^>]*>',old)==re.findall(r'<img\b[^>]*>',s),p
+              assert re.findall(r'<link[^>]*rel="canonical"[^>]*>',old)==re.findall(r'<link[^>]*rel="canonical"[^>]*>',s),p
               assert s.count('G-K88VMWDCXD')==old.count('G-K88VMWDCXD'),p
-              assert re.findall(r'<img\b[^>]*>',s)==re.findall(r'<img\b[^>]*>',old),p
               p.write_text(s,encoding='utf-8')
-          assert count['detail']==3318,count
-          js=Path('assets/discovery.js')
-          s=js.read_text(encoding='utf-8')
-          assert 'if(hero){' in s
-          js.write_text(s.replace('if(hero){','if(hero && !hero.querySelector(".guide-cta-home")){',1),encoding='utf-8')
-          print('Validated:',count)
+          print('Verified stacked article buttons on',len(paths),'pages; fixed bottom unchanged:',counts)
           PY
-          node --check assets/discovery.js
           git diff --check
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html region station assets/discovery.js
-          git commit -m 'fix: static activation buttons on home and hubs, critical styles on all guides'
+          git add region station
+          git commit -m 'fix: stack full-width activation and chat buttons inside article only'
           git push origin HEAD:main
