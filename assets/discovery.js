@@ -78,7 +78,7 @@ if(hero){
   const actions=document.createElement('div');actions.className='finder-cta';
   const opening=document.createElement('a');opening.href='https://알뜰개통.kr/';opening.target='_blank';opening.rel='noopener noreferrer';opening.textContent='온라인 개통하기';opening.dataset.event='selfopen_click';opening.className='finder-cta-main';
   const kakao=document.createElement('a');kakao.href='https://m.site.naver.com/1GQVM';kakao.target='_blank';kakao.rel='noopener noreferrer';kakao.textContent='카카오 상담';kakao.dataset.event='consultation_click';kakao.className='finder-cta-sub';
-  actions.append(opening,kakao);hero.append(actions);
+  const reserve=kakao.cloneNode(true);reserve.textContent='방문 예약하기';reserve.dataset.event='reservation_click';reserve.className='finder-cta-reserve';actions.append(opening,kakao,reserve);hero.append(actions);
 }
 document.querySelectorAll('[data-event]').forEach(a=>a.addEventListener('click',()=>{if(typeof gtag==='function')gtag('event',a.dataset.event,{event_category:'conversion',event_label:location.pathname});}));
 const top=document.querySelector('header .topbtn');if(top)top.addEventListener('click',()=>{if(typeof gtag==='function')gtag('event','consultation_click',{event_category:'conversion',event_label:location.pathname});});
